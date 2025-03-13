@@ -2,12 +2,24 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
+# from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores  import FAISS
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain_community.chat_models import ChatOpenAI  
+# from langchain_community.chat_models import ChatOpenAI  
 from htmlTemplates import css, bot_template, user_template
+from langchain_together import TogetherEmbeddings
+from langchain_groq import ChatGroq
+
+load_dotenv()
+
+llm1 = ChatGroq(
+    model="llama-3.3-70b-versatile",
+)
+
+embeddings = TogetherEmbeddings(
+    model="togethercomputer/m2-bert-80M-8k-retrieval",
+)
 
 #================================================================================================
 # Functions
@@ -36,7 +48,7 @@ def get_text_chunks(text):
 # get_vectorstore is to create embeddings using OpenAIEmbeddings
 # and create vectorstore using FAISS
 def get_vectorstore(text_chunks):
-    embeddings = OpenAIEmbeddings()
+    # embeddings = OpenAIEmbeddings()
     # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-xl")
     vectorstore = FAISS.from_texts(texts= text_chunks, embedding = embeddings)
     return vectorstore
@@ -44,10 +56,10 @@ def get_vectorstore(text_chunks):
 # get_conversation_chain is to create a conversation chain
 # using ChatOpenAI and ConversationBufferMemory
 def get_conversation_chain(vectorstore):
-    llm = ChatOpenAI()
+    # llm = ChatOpenAI()
     memory = ConversationBufferMemory(memory_key= 'chat_history', return_messages= True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
-        llm = llm,
+        llm = llm1,
         retriever = vectorstore.as_retriever(), 
         memory= memory)
     return conversation_chain
